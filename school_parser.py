@@ -20,12 +20,19 @@ def get_school_info(school):
 	
 	# Test Scores
 	if test_scores:
+		school['english_prof'] = 0
+		school['math_prof'] = 0
+		subjects = test_scores.find('.subject')
 		scores = test_scores.find('.score')
-		english_prof = percent_check(scores[0].text)
-		school['english_prof'] = english_prof
-		math_prof = percent_check(scores[1].text)
-		school['math_prof'] = math_prof
-		test_scores_avg = (english_prof + math_prof) / 2
+		score_zip = zip(subjects, scores)
+		for pair in score_zip:
+			if pair[0].text == 'English':
+				english_prof = percent_check(pair[1].text)
+				school['english_prof'] = english_prof
+			elif pair[0].text == 'Math':
+				math_prof = percent_check(pair[1].text)
+				school['math_prof'] = math_prof
+		test_scores_avg = (school['english_prof'] + school['math_prof']) / 2
 
 	# Student Demographics
 	if students:
@@ -37,9 +44,16 @@ def get_school_info(school):
 			ethnicity = dblock[0].text
 			percent = percent_check(dblock[1].text)
 			demographics[ethnicity] = percent
-		urm_percent = demographics['Hispanic'] + demographics['Black']
-		school['hispanic'] = demographics['Hispanic']
-		school['black'] = demographics['Black']
+		if 'Hispanic' not in demographics:
+			school['hispanic'] = 0
+		else:
+			school['hispanic'] = demographics['Hispanic']
+
+		if 'Black' not in demographics:
+			school['black'] = 0
+		else:
+			school['black'] = demographics['Black']
+		urm_percent = school['hispanic'] + school['black']
 		school['urm_percent'] = urm_percent
 		ranking += (urm_percent / 100) * 0.35
 		num_metrics += 1
@@ -67,7 +81,10 @@ def get_school_info(school):
 		t_exp_percent = percent_check(teacher_experience)
 
 	# Generate ANova Ranking
-	school['ranking'] = ranking / num_metrics
+	if num_metrics == 0:
+		school['ranking'] = 0
+	else:
+		school['ranking'] = ranking / num_metrics
 	session.close()
 	return school
 

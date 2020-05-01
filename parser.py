@@ -4,10 +4,11 @@ from school_parser import *
 prefix = 'https://www.greatschools.org/'
 ms = 'gradeLevels%5B%5D=m'
 hs = 'gradeLevels%5B%5D=h'
+school_type = 'st%5B%5D=public_charter&st%5B%5D=public&st%5B%5D=charter'
 table_view = 'view=table'
 
 def form_url(page=1):
-	default = prefix + state + city + schools + ms + '&' + hs + '&' + table_view
+	default = prefix + state + city + schools + ms + '&' + hs + '&' + school_type + '&' + table_view
 	if page == 1:
 		return default
 	else:
