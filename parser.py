@@ -1,12 +1,17 @@
 from requests_html import HTMLSession
 from school_parser import *
 
+prefix = 'https://www.greatschools.org/'
+ms = 'gradeLevels%5B%5D=m'
+hs = 'gradeLevels%5B%5D=h'
+table_view = 'view=table'
+
 def form_url(page=1):
 	default = prefix + state + city + schools + ms + '&' + hs + '&' + table_view
 	if page == 1:
 		return default
 	else:
-		return prefix + state + city + schools + ms + '&' + hs + '&' + table_view + '&' + 'page=' + str(page)
+		return default + '&' + 'page=' + str(page)
 
 def find_schools(state, city):
 	"""
@@ -19,6 +24,7 @@ def find_schools(state, city):
 
 	# Get all row information for every available page
 	schools = {}
+	page = 1
 	columns = r.html.find('tr')[0]
 	while r.html.find('tr') != []:
 		rows = r.html.find('tr')
@@ -43,22 +49,19 @@ def find_schools(state, city):
 			school['total_students'] = total_students
 			school['student_teacher_ratio'] = student_teacher_ratio
 			school['district'] = district
-			school = get_school_info(session, school)
+			school = get_school_info(school)
 			schools[name] = school
+			print(school)
 
 		# Render next page of results
 		page += 1
+		session.close()
+		session = HTMLSession()
 		r = session.get(form_url(page))
 		r.html.render()
-	print(schools)
 
-# Form url to grab list of schools
-prefix = 'https://www.greatschools.org/'
+# Find all schools
 state = input("What state would you like to search for schools? : ").lower() + '/'
 city = input("What city would you like to search? : ").lower() + '/'
 schools = 'schools/?'
-ms = 'gradeLevels%5B%5D=m'
-hs = 'gradeLevels%5B%5D=h'
-table_view = 'view=table'
-page = 1
 find_schools(state, city)

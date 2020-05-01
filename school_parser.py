@@ -1,10 +1,11 @@
 from requests_html import HTMLSession
 
-def get_school_info(session, school):
+def get_school_info(school):
 	"""
 	Web scrapes a school's GreatSchools page.
 	school: a dictionary
 	"""
+	session = HTMLSession()
 	r = session.get(school['link'])
 	r.html.render()
 
@@ -40,7 +41,7 @@ def get_school_info(session, school):
 		school['hispanic'] = demographics['Hispanic']
 		school['black'] = demographics['Black']
 		school['urm_percent'] = urm_percent
-		ranking += urm_percent * 0.35
+		ranking += (urm_percent / 100) * 0.35
 		num_metrics += 1
 
 		# English Learners
@@ -48,7 +49,7 @@ def get_school_info(session, school):
 		if ell:
 			ell_percent = percent_check(ell.find('tspan')[0].text)
 			school['ell'] = ell_percent
-			ranking += ell_percent * 0.15
+			ranking += (ell_percent / 100) * 0.15
 			num_metrics += 1
 
 		# Low-income
@@ -56,7 +57,7 @@ def get_school_info(session, school):
 		if low_income:
 			low_income_percent = percent_check(low_income.find('tspan')[0].text)
 			school['low_income'] = low_income_percent
-			ranking += low_income_percent * 0.5
+			ranking += (low_income_percent / 100) * 0.5
 			num_metrics += 1
 
 
@@ -66,7 +67,8 @@ def get_school_info(session, school):
 		t_exp_percent = percent_check(teacher_experience)
 
 	# Generate ANova Ranking
-	school['ranking'] = ranking
+	school['ranking'] = ranking / num_metrics
+	session.close()
 	return school
 
 def percent_check(percent):
